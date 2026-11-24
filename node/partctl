@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+infra_dir="$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")"
+compose=(docker compose --env-file "$infra_dir/.env" -f "$infra_dir/compose.yaml")
+action="${1:-help}"
+if [[ $# -gt 0 ]]; then shift; fi
+
+case "$action" in
+  status)
+    docker info --format 'Docker {{.ServerVersion}} | {{.DockerRootDir}}'
+    "${compose[@]}" --profile training --profile inference ps -a
+    nvidia-smi
+    ;;
+  shell)
+    "${compose[@]}" --profile training run --rm train bash "$@"
+    ;;
+  train)
+    "${compose[@]}" --profile training run --rm train uv run --locked "$@"
+    ;;
+  infer)
+    "${compose[@]}" --profile inference run --rm --service-ports infer uv run --locked "$@"
+    ;;
+  submit)
+    "${compose[@]}" --profile training run -d train uv run --locked "$@"
+    ;;
+  logs)
+    docker logs -f "$@"
+    ;;
+  stop)
+    docker stop "$@"
+    ;;
+  gpu-check)
+    "${compose[@]}" --profile training run --rm train nvidia-smi -L
+    ;;
+  *)
+    printf '%s\n' \
+      'Usage: partctl {status|shell|gpu-check}' \
+      '       partctl train python train.py [args...]' \
+      '       partctl submit python train.py [args...]' \
+      '       partctl infer python serve.py [args...]' \
+      '       partctl logs CONTAINER | stop CONTAINER' \
+      'Each model project needs pyproject.toml and uv.lock.'
+    ;;
+esac
+

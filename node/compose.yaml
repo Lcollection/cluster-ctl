@@ -1,0 +1,43 @@
+name: part
+
+x-workload: &workload
+  image: ${PART_IMAGE:-part-runtime:uv-python3.12}
+  working_dir: /workspace
+  init: true
+  shm_size: "8gb"
+  devices:
+    - ${PART_GPU_DEVICE:-nvidia.com/gpu=all}
+  security_opt:
+    - label=disable
+  environment:
+    UV_PROJECT_ENVIRONMENT: /opt/venv
+    UV_CACHE_DIR: /cache/uv
+    UV_LINK_MODE: copy
+    HF_HOME: /cache/huggingface
+    TORCH_HOME: /cache/torch
+    TRITON_CACHE_DIR: /cache/triton
+    PYTHONUNBUFFERED: "1"
+    OMP_NUM_THREADS: ${OMP_NUM_THREADS:-4}
+  volumes:
+    - ${PART_PROJECT_DIR:?Set PART_PROJECT_DIR to a model project}:/workspace
+    - ${PART_ROOT:?Set PART_ROOT}/datasets:/data:ro
+    - ${PART_ROOT}/models:/models
+    - ${PART_ROOT}/runs:/runs
+    - ${PART_ROOT}/cache:/cache
+
+services:
+  train:
+    <<: *workload
+    profiles: [training]
+    command: [bash]
+    stdin_open: true
+    tty: true
+
+  infer:
+    <<: *workload
+    profiles: [inference]
+    command: [bash]
+    stdin_open: true
+    tty: true
+    ports:
+      - "127.0.0.1:${PART_PORT:-8000}:8000"

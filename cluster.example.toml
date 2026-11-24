@@ -1,0 +1,9 @@
+[[nodes]]
+name = "cluster_name"
+host = "cluster_ip"
+port = port_number
+user = "your_ssh_user_name"
+work_root = "~/ai-training"
+project_dir = "projects/xxx"
+# Optional; omit to use the default SSH identity/agent.
+# identity_file = "~/.ssh/id_ed25519"

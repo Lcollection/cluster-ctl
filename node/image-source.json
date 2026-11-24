@@ -1,0 +1,12 @@
+{
+  "registry_source": "ghcr.io/astral-sh/uv:python3.12-bookworm-slim",
+  "architecture": "amd64",
+  "image_id": "sha256:7ce244f009b63c85f9fe5f94a5cb21820c85e5ece56769ad9484d76e64ac30cb",
+  "local_tag": "part-runtime:uv-python3.12",
+  "created": "2026-02-04T21:30:33.316051646Z",
+  "verified": [
+    "eight_gpu_cuda_kernel",
+    "detached_training_logs_stop",
+    "inference_localhost_http"
+  ]
+}
